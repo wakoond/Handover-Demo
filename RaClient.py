@@ -12,6 +12,10 @@ class RaClient:
         self._sock = False
         self._ar1_running = False
         self._ar2_running = False
+        self._status_cb = None
+
+    def SetStatusCb(self, cb):
+        self._status_cb = cb
 
     def Connect(self):
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -34,7 +38,8 @@ class RaClient:
                     self._ar2_running = False
                 elif tokens[i+1] == 'running':
                     self._ar2_running = True
-        print 'Running: AR1 ' + str(self._ar1_running) + " AR2 " + str(self._ar2_running)
+        if self._status_cb != None:
+            self._status_cb(self._ar1_running, self._ar2_running)
 
     def SendStart(self, ar):
         self._sock.send("START|" + str(ar) + "\n")
@@ -46,7 +51,7 @@ class RaClient:
         data = self._sock.recv(512)
         self._ParseStatus(data)
 
-    def SendGet(self, ar):
+    def SendGet(self):
         self._sock.send("GET\n")
         data = self._sock.recv(512)
         self._ParseStatus(data)

@@ -254,7 +254,7 @@ void * cli_thread(void * arg)
         memset(buffer, 0, sizeof(buffer));
         snprintf(buffer, sizeof(buffer), "STATUS|radvd-ar1|%s|radvd-ar2|%s", 
                 (ar1_pid == 0) ? "stopped" : "running",
-                (ar2_pid == 0) ? "stopped" : "running");
+                (ar2_pid != 0) ? "stopped" : "running");
         debug("Status after command: %s", buffer);
         write(fd, buffer, strlen(buffer));
     }

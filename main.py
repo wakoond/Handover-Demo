@@ -34,7 +34,7 @@ if __name__ == '__main__':
     frame.Show()
     frame.SetAr1Interface('eth0')
     frame.SetAr2Interface('lo')
-    frame.Start('localhost', 161, 'public')
+    frame.Start('localhost', 161, 'public', 162)
     app.MainLoop()
 
 

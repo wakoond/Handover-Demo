@@ -5,7 +5,8 @@ import numpy as num
 
 from NetStatCore import NetStatCore, NetStatData
 from NetStatPlotPanel import NetStatPlotPanel
-
+from RaClient import RaClient
+from VideoPanel import VideoPanel
 
 class HandoverFrame (wx.Frame):
     def __init__(self, app, title, records, maximum):
@@ -15,7 +16,7 @@ class HandoverFrame (wx.Frame):
         # Add a panel so it looks correct on all platforms
         self.panel = wx.Panel(self, wx.ID_ANY)
  
-        title = wx.StaticText(self.panel, wx.ID_ANY, title, style=wx.RIGHT)
+        titleTxt = wx.StaticText(self.panel, wx.ID_ANY, title, style=wx.ALIGN_RIGHT)
  
         points = num.zeros((1,records), dtype=num.int8)
         clrs = [[225,200,160]]
@@ -43,47 +44,45 @@ class HandoverFrame (wx.Frame):
         bmpStop = wx.EmptyBitmap(1, 1)
         bmpStop.LoadFile('stop.jpg', wx.BITMAP_TYPE_ANY)
 
-        ar1RaStart = wx.StaticBitmap(self.panel, wx.ID_ANY, bmpStart)
-        ar1RaStart.Hide()
-        ar2RaStart = wx.StaticBitmap(self.panel, wx.ID_ANY, bmpStart)
-        ar2RaStart.Hide()
-        ar1RaStop = wx.StaticBitmap(self.panel, wx.ID_ANY, bmpStop)
-        ar1RaStop.Hide()
-        ar2RaStop = wx.StaticBitmap(self.panel, wx.ID_ANY, bmpStop)
-        ar2RaStop.Hide()
+        self.ar1RaStart = wx.StaticBitmap(self.panel, wx.ID_ANY, bmpStart)
+        self.ar2RaStart = wx.StaticBitmap(self.panel, wx.ID_ANY, bmpStart)
+        self.ar1RaStop = wx.StaticBitmap(self.panel, wx.ID_ANY, bmpStop)
+        self.ar2RaStop = wx.StaticBitmap(self.panel, wx.ID_ANY, bmpStop)
+
+        video = VideoPanel(self.panel, "Video Stream", "http://172.16.162.1:8080")
 
         topSizer        = wx.BoxSizer(wx.VERTICAL)
         titleSizer      = wx.BoxSizer(wx.HORIZONTAL)
         plotSizer       = wx.BoxSizer(wx.HORIZONTAL)
-        ar1Sizer        = wx.BoxSizer(wx.VERTICAL)
-        ar2Sizer        = wx.BoxSizer(wx.VERTICAL)
+        self.ar1Sizer   = wx.BoxSizer(wx.VERTICAL)
+        self.ar2Sizer   = wx.BoxSizer(wx.VERTICAL)
         ctrlSizer       = wx.BoxSizer(wx.HORIZONTAL)
         
-        titleSizer.Add(title, 0, wx.ALL, 5)
+        titleSizer.Add(titleTxt, 1, wx.EXPAND, 5)
 
         plotSizer.Add(self.plotAr1, 0, wx.ALIGN_CENTER|wx.EXPAND, 5)
         self.plotAr1.setSizer(plotSizer)
         plotSizer.Add(self.plotAr2, 0, wx.ALIGN_CENTER|wx.EXPAND, 5)
         self.plotAr2.setSizer(plotSizer)
 
-        ar1Sizer.Add(btnAr1Enable, 0, wx.ALL|wx.ALIGN_CENTER, 5)
-        ar1Sizer.Add(btnAr1Auto, 0, wx.ALL|wx.ALIGN_CENTER, 5)
-        ar1Sizer.Add(ar1RaStart, 0, wx.ALL|wx.ALIGN_CENTER, 20)
-        ar1RaStart.Show()
+        self.ar1Sizer.Add(btnAr1Enable, 0, wx.ALL|wx.ALIGN_CENTER, 5)
+        self.ar1Sizer.Add(btnAr1Auto, 0, wx.ALL|wx.ALIGN_CENTER, 5)
+        self.ar1Sizer.Add(self.ar1RaStart, 0, wx.ALL|wx.ALIGN_CENTER, 20)
+        self.ar1Sizer.Add(self.ar1RaStop, 0, wx.ALL|wx.ALIGN_CENTER, 20)
         
-        ar2Sizer.Add(btnAr2Enable, 0, wx.ALL|wx.ALIGN_CENTER, 5)
-        ar2Sizer.Add(btnAr2Auto, 0, wx.ALL|wx.ALIGN_CENTER, 5)
-        ar2Sizer.Add(ar2RaStart, 0, wx.ALL|wx.ALIGN_CENTER, 20)
-        ar2RaStart.Show()
+        self.ar2Sizer.Add(btnAr2Enable, 0, wx.ALL|wx.ALIGN_CENTER, 5)
+        self.ar2Sizer.Add(btnAr2Auto, 0, wx.ALL|wx.ALIGN_CENTER, 5)
+        self.ar2Sizer.Add(self.ar2RaStart, 0, wx.ALL|wx.ALIGN_CENTER, 20)
+        self.ar2Sizer.Add(self.ar2RaStop, 0, wx.ALL|wx.ALIGN_CENTER, 20)
 
-        ctrlSizer.Add(ar1Sizer, 0, wx.ALIGN_LEFT, 5)
-        ctrlSizer.Add(wx.StaticText(self.panel, wx.ID_ANY, 'Video'), 0, wx.ALIGN_CENTER|wx.EXPAND, 5)
-        ctrlSizer.Add(ar2Sizer, 0, wx.ALIGN_RIGHT, 5)
+        ctrlSizer.Add(self.ar1Sizer, 0, wx.ALIGN_LEFT, 5)
+        ctrlSizer.Add(video, 2, wx.ALIGN_CENTER_HORIZONTAL, 5)
+        ctrlSizer.Add(self.ar2Sizer, 0, wx.ALIGN_RIGHT, 5)
 
-        topSizer.Add(titleSizer, 0,wx.ALIGN_CENTER|wx.EXPAND)
-        topSizer.Add(wx.StaticLine(self.panel), 0, wx.ALIGN_CENTER|wx.EXPAND, 5)
-        topSizer.Add(plotSizer, 0, wx.ALIGN_CENTER|wx.EXPAND, 5)
-        topSizer.Add(ctrlSizer, 0, wx.ALIGN_CENTER|wx.EXPAND, 5)
+        topSizer.Add(titleSizer, 0,wx.ALIGN_CENTER_HORIZONTAL)
+        topSizer.Add(wx.StaticLine(self.panel), 0, wx.EXPAND, 5)
+        topSizer.Add(plotSizer, 1, wx.EXPAND, 5)
+        topSizer.Add(ctrlSizer, 1, wx.EXPAND, 5)
 
         self.SetSizeHints(500,600,750,800)
         self.panel.SetSizer(topSizer)
@@ -98,13 +97,36 @@ class HandoverFrame (wx.Frame):
     def Ar2PlotDataTrigger(self, ifname, dtype, data):
         self.plotAr2.Update([data])
 
+    def RaStatusTrigger(self, ar1, ar2):
+        if (ar1):
+            self.ar1RaStart.Show()
+            self.ar1RaStop.Hide()
+        else:
+            self.ar1RaStart.Hide()
+            self.ar1RaStop.Show()
+        if (ar2):
+            self.ar2RaStart.Show()
+            self.ar2RaStop.Hide()
+        else:
+            self.ar2RaStart.Hide()
+            self.ar2RaStop.Show()
+
+        self.ar1Sizer.Layout()
+        self.ar2Sizer.Layout()
+
+
     def SetAr1Interface(self, ifname):
         self.nsc.AddData(ifname, NetStatData.IN_OCTETS, self.Ar1PlotDataTrigger)
     
     def SetAr2Interface(self, ifname):
         self.nsc.AddData(ifname, NetStatData.IN_OCTETS, self.Ar2PlotDataTrigger)
 
-    def Start(self, host, port, agent):
+    def Start(self, host, port, agent, ra_port):
+        self.rac = RaClient(host, ra_port)
+        self.rac.SetStatusCb(self.RaStatusTrigger)
+        self.rac.Connect()
+        self.rac.SendGet()
+
         self.nsc.SetHost(host)
         self.nsc.SetPort(port)
         self.nsc.SetAgent(agent)
