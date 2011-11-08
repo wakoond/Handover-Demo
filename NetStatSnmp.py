@@ -5,30 +5,33 @@ from pyasn1.codec.ber import encoder, decoder
 from pysnmp.proto import api
 from time import sleep, time
 from threading import Thread
+import threading
+
+import wx
 
 pMod = api.protoModules[api.protoVersion1]
 
 class NetStatSnmp (Thread):
-    def __init__(self, ifname, poollen = 50):
+    def __init__(self, ifname):
         Thread.__init__(self)
         self._ifname = ifname
-        self._poollen = poollen
         self._host = 'localhost'
         self._port = 161
         self._agent = 'public'
         self._interval = 5
-        self._en_LastChange = False
-        self._en_InOctets = False
-        self._en_InUnicastPkts = False
-        self._en_InNUnicastPkts = False
-        self._en_InDiscard = False
-        self._en_InErrors = False
-        self._en_InUnknownProtos = False
-        self._en_OutOctets = False
-        self._en_OutUnicastPkts = False
-        self._en_OutNUnicastPkts = False
-        self._en_OutDiscard = False
-        self._en_OutErrors = False
+        self._stop = threading.Event()
+        self._CbLastChange = None
+        self._CbInOctets = None
+        self._CbInUnicastPkts = None
+        self._CbInNUnicastPkts = None
+        self._CbInDiscard = None
+        self._CbInErrors = None
+        self._CbInUnknownProtos = None
+        self._CbOutOctets = None
+        self._CbOutUnicastPkts = None
+        self._CbOutNUnicastPkts = None
+        self._CbOutDiscard = None
+        self._CbOutErrors = None
 
     def SetHost(self, host):
         self._host = host
@@ -42,41 +45,48 @@ class NetStatSnmp (Thread):
     def SetInterval(self, interval):
         self._interval = interval
 
-    def EnableLastChange(self):
-        self._en_LastChange = True
+    def Stop(self):
+        self._stop.set()
+        self.join()
+
+    def _IsStopped(self):
+        return self._stop.isSet()
+
+    def EnableLastChange(self, cb):
+        self._CbLastChange = cb
     
-    def EnableInOctets(self):
-        self._en_InOctets = True
+    def EnableInOctets(self, cb):
+        self._CbInOctets = cb
 
-    def EnableInUnicastPkts(self):
-        self._en_InUnicastPkts = True
+    def EnableInUnicastPkts(self, cb):
+        self._CbInUnicastPkts = cb
 
-    def EnableInNUnicastPkts(self):
-        self._en_InNUnicastPkts = True
+    def EnableInNUnicastPkts(self, cb):
+        self._CbInNUnicastPkts = cb
 
-    def EnableInDiscards(self):
-        self._en_InDiscards = True
+    def EnableInDiscards(self, cb):
+        self._CbInDiscards = cb
 
-    def EnableInErrors(self):
-        self._en_InErrors = True
+    def EnableInErrors(self, cb):
+        self._CbInErrors = cb
 
-    def EnableInUnknownProtos(self):
-        self._en_InUnknownProtos = True
+    def EnableInUnknownProtos(self, cb):
+        self._CbInUnknownProtos = cb
 
-    def EnableOutOctets(self):
-        self._en_OutOctets = True
+    def EnableOutOctets(self, cb):
+        self._CbOutOctets = cb
 
-    def EnableOutUnicastPkts(self):
-        self._en_OutUnicastPkts = True
+    def EnableOutUnicastPkts(self, cb):
+        self._CbOutUnicastPkts = cb
 
-    def EnableOutNUnicastPkts(self):
-        self._en_OutNUnicastPkts = True
+    def EnableOutNUnicastPkts(self, cb):
+        self._CbOutNUnicastPkts = cb
 
-    def EnableOutDiscards(self):
-        self._en_OutDiscards = True
+    def EnableOutDiscards(self, cb):
+        self._CbOutDiscards = cb
 
-    def EnableOutErrors(self):
-        self._en_OutErrors = True
+    def EnableOutErrors(self, cb):
+        self._CbOutErrors = cb
 
     def _get(self, pdu):
         errorIndication, errorStatus, errorIndex, varBinds = cmdgen.CommandGenerator().getCmd(
@@ -131,29 +141,29 @@ class NetStatSnmp (Thread):
         reqPDU =  pMod.GetRequestPDU()
         pMod.apiPDU.setDefaults(reqPDU)
         pduList = []
-        if self._en_LastChange:
+        if self._CbLastChange != None:
             pduList.append(((1,3,6,1,2,1,2,2,1,9,self.SNMPIndex), pMod.Null()))
-        if self._en_InOctets:
+        if self._CbInOctets != None:
             pduList.append(((1,3,6,1,2,1,2,2,1,10,self.SNMPIndex), pMod.Null()))
-        if self._en_InUnicastPkts:
+        if self._CbInUnicastPkts != None:
             pduList.append(((1,3,6,1,2,1,2,2,1,11,self.SNMPIndex), pMod.Null()))
-        if self._en_InNUnicastPkts:
+        if self._CbInNUnicastPkts != None:
             pduList.append(((1,3,6,1,2,1,2,2,1,12,self.SNMPIndex), pMod.Null()))
-        if self._en_InDiscard:
+        if self._CbInDiscard != None:
             pduList.append(((1,3,6,1,2,1,2,2,1,13,self.SNMPIndex), pMod.Null()))
-        if self._en_InErrors:
+        if self._CbInErrors != None:
             pduList.append(((1,3,6,1,2,1,2,2,1,14,self.SNMPIndex), pMod.Null()))
-        if self._en_InUnknownProtos:
+        if self._CbInUnknownProtos != None:
             pduList.append(((1,3,6,1,2,1,2,2,1,15,self.SNMPIndex), pMod.Null()))
-        if self._en_OutOctets:
+        if self._CbOutOctets != None:
             pduList.append(((1,3,6,1,2,1,2,2,1,16,self.SNMPIndex), pMod.Null()))
-        if self._en_OutUnicastPkts:
+        if self._CbOutUnicastPkts != None:
             pduList.append(((1,3,6,1,2,1,2,2,1,17,self.SNMPIndex), pMod.Null()))
-        if self._en_OutNUnicastPkts:
+        if self._CbOutNUnicastPkts != None:
             pduList.append(((1,3,6,1,2,1,2,2,1,18,self.SNMPIndex), pMod.Null()))
-        if self._en_OutDiscard:
+        if self._CbOutDiscard != None:
             pduList.append(((1,3,6,1,2,1,2,2,1,19,self.SNMPIndex), pMod.Null()))
-        if self._en_OutErrors:
+        if self._CbOutErrors != None:
             pduList.append(((1,3,6,1,2,1,2,2,1,20,self.SNMPIndex), pMod.Null()))
 
         pMod.apiPDU.setVarBinds(reqPDU, pduList)
@@ -170,8 +180,8 @@ class NetStatSnmp (Thread):
             udp.domainName, udp.UdpSocketTransport().openClientMode()
             )
         transportDispatcher.registerRecvCbFun(self._cbRecvFun)
-    
-        while True:
+
+        while not self._IsStopped():
             if not transportDispatcher.transportsAreWorking():
                 transportDispatcher.sendMessage(
                     encoder.encode(reqMsg), udp.domainName, (self._host, self._port)
@@ -194,7 +204,32 @@ class NetStatSnmp (Thread):
                     print errorStatus.prettyPrint()
                 else:
                     for oid, val in pMod.apiPDU.getVarBinds(rspPDU):
-                        print '%s = %s' % (oid.prettyPrint(), val.prettyPrint())
+                        try:
+                            if oid == (1,3,6,1,2,1,2,2,1,9,self.SNMPIndex) and self._CbLastChange != None:
+                                self._CbLastChange(self._ifname, oid, val)
+                            elif oid == (1,3,6,1,2,1,2,2,1,10,self.SNMPIndex) and self._CbInOctets != None:
+                                self._CbInOctets(self._ifname, oid, val)
+                            elif oid == (1,3,6,1,2,1,2,2,1,11,self.SNMPIndex) and self._CbInUnicastPkts != None:
+                                self._CbInUnicastPkts(self._ifname, oid, val)
+                            elif oid == (1,3,6,1,2,1,2,2,1,12,self.SNMPIndex) and self._CbInNUnicastPkts != None:
+                                self._CbInNUnicastPkts(self._ifname, oid, val)
+                            elif oid == (1,3,6,1,2,1,2,2,1,13,self.SNMPIndex) and self._CbInDiscard != None:
+                                self._CbInDiscard(self._ifname, oid, val)
+                            elif oid == (1,3,6,1,2,1,2,2,1,14,self.SNMPIndex) and self._CbInErrors != None:
+                                self._CbInErrors(self._ifname, oid, val)
+                            elif oid == (1,3,6,1,2,1,2,2,1,15,self.SNMPIndex) and self._CbInUnknownProtos != None:
+                                self._CbInUnknownProtos(self._ifname, oid, val)
+                            elif oid == (1,3,6,1,2,1,2,2,1,16,self.SNMPIndex) and self._CbOutOctets != None:
+                                self._CbOutOctets(self._ifname, oid, val)
+                            elif oid == (1,3,6,1,2,1,2,2,1,17,self.SNMPIndex) and self._CbOutUnicastPkts != None:
+                                self._CbOutUnicastPkts(self._ifname, oid, val)
+                            elif oid == (1,3,6,1,2,1,2,2,1,18,self.SNMPIndex) and self._CbOutNUnicastPkts != None:
+                                self._CbOutNUnicastPkts(self._ifname, oid, val)
+                            elif oid == (1,3,6,1,2,1,2,2,1,19,self.SNMPIndex) and self._CbOutDiscard != None:
+                                self._CbOutDiscard(self._ifname, oid, val)
+                            elif oid == (1,3,6,1,2,1,2,2,1,20,self.SNMPIndex) and self._CbOutErrors != None:
+                                self._CbOutErrors(self._ifname, oid, val)
+                        except wx.PyDeadObjectError, err: pass
                 transportDispatcher.jobFinished(1)
         return wholeMsg
 
