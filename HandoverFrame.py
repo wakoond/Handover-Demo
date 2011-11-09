@@ -9,7 +9,7 @@ from RaClient import RaClient
 from VideoPanel import VideoPanel
 
 class HandoverFrame (wx.Frame):
-    def __init__(self, app, title, records, maximum):
+    def __init__(self, app, title, records, maximum, video_uri):
         self.app = app
         wx.Frame.__init__(self, None, wx.ID_ANY, title=title)
  
@@ -49,7 +49,7 @@ class HandoverFrame (wx.Frame):
         self.ar1RaStop = wx.StaticBitmap(self.panel, wx.ID_ANY, bmpStop)
         self.ar2RaStop = wx.StaticBitmap(self.panel, wx.ID_ANY, bmpStop)
 
-        video = VideoPanel(self.panel, "Video Stream", "http://172.16.162.1:8080")
+        video = VideoPanel(self.panel, "Video Stream", video_uri)
 
         topSizer        = wx.BoxSizer(wx.VERTICAL)
         titleSizer      = wx.BoxSizer(wx.HORIZONTAL)
