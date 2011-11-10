@@ -1,4 +1,5 @@
 
+import sys
 import wx
 import wx.media
 
@@ -10,15 +11,19 @@ class VideoPanel(wx.Panel):
         self.mc = None
 
         if uri != '' and uri != None:
-            try:
-                self.mc = wx.media.MediaCtrl(self, style=wx.SIMPLE_BORDER,
-                                            #szBackend=wx.media.MEDIABACKEND_DIRECTSHOW
-                                            #szBackend=wx.media.MEDIABACKEND_QUICKTIME
-                                            #szBackend=wx.media.MEDIABACKEND_WMP10
-                                            )
-            except NotImplementedError:
-                self.Destroy()
-                raise
+            backend = None
+            if sys.platform == 'linux2':
+                backend = wx.media.MEDIABACKEND_GSTREAMER
+            elif sys.platform == 'darwin':
+                backend = wx.media.MEDIABACKEND_QUICKTIME
+            elif sys.platform == 'win32':
+                backend = wx.media.MEDIABACKEND_DIRECTSHOW
+            if backend != None:
+                try:
+                    self.mc = wx.media.MediaCtrl(self, style=wx.SIMPLE_BORDER, szBackend = backend)
+                except NotImplementedError:
+                    self.Destroy()
+                    raise
 
         sizer = wx.BoxSizer(wx.VERTICAL)
 

@@ -9,7 +9,7 @@ import threading
 
 import wx
 
-pMod = api.protoModules[api.protoVersion1]
+pMod = api.protoModules[api.protoVersion2c]
 
 class NetStatSnmp (Thread):
     def __init__(self, ifname):
@@ -89,13 +89,16 @@ class NetStatSnmp (Thread):
         self._CbOutErrors = cb
 
     def _get(self, pdu):
-        errorIndication, errorStatus, errorIndex, varBinds = cmdgen.CommandGenerator().getCmd(
-            cmdgen.CommunityData('my-agent', self._agent, 0),
-            cmdgen.UdpTransportTarget((self._host, self._port)),
-            pdu)
+        try:
+            errorIndication, errorStatus, errorIndex, varBinds = cmdgen.CommandGenerator().getCmd(
+                cmdgen.CommunityData('my-agent', self._agent, 0),
+                cmdgen.UdpTransportTarget((self._host, self._port)), pdu)
+        except socket.error:
+            print 'Unable to connect to SNMP server at ' + self._host + ':' + str(self._port)
+            return nil
 
         if errorIndication:
-            raise Exception(errorStatus.prettyPrint())
+            raise Exception("SNMP Error " + str(errorStatus) + " (index: " + str(errorIndex) +") - " + str(errorIndication))
 
         for oid, val in varBinds:
             if oid == pdu:

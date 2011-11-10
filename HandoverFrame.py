@@ -18,7 +18,11 @@ class HandoverFrame (wx.Frame):
  
         titleTxt = wx.StaticText(self.panel, wx.ID_ANY, title, style=wx.ALIGN_RIGHT)
  
-        points = num.zeros((1,records), dtype=num.int8)
+        #points = num.zeros((1,records), dtype=num.int8)
+        points = []
+        for i in range(0, records):
+            points.append(int(i / 2))
+        points = [points]
         clrs = [[225,200,160]]
  
         self.plotAr1 = NetStatPlotPanel(self.panel, (350,250), points, clrs)
@@ -92,10 +96,10 @@ class HandoverFrame (wx.Frame):
 
 
     def Ar1PlotDataTrigger(self, ifname, dtype, data):
-        self.plotAr1.Update([data])
+        self.plotAr1.UpdatePoints([data])
     
     def Ar2PlotDataTrigger(self, ifname, dtype, data):
-        self.plotAr2.Update([data])
+        self.plotAr2.UpdatePoints([data])
 
     def RaStatusTrigger(self, ar1, ar2):
         if (ar1):
@@ -121,8 +125,8 @@ class HandoverFrame (wx.Frame):
     def SetAr2Interface(self, ifname):
         self.nsc.AddData(ifname, NetStatData.IN_OCTETS, self.Ar2PlotDataTrigger)
 
-    def Start(self, host, port, agent, ra_port):
-        self.rac = RaClient(host, ra_port)
+    def Start(self, host, port, agent, ra_host, ra_port):
+        self.rac = RaClient(ra_host, ra_port)
         self.rac.SetStatusCb(self.RaStatusTrigger)
         self.rac.Connect()
         self.rac.SendGet()

@@ -38,6 +38,8 @@ class NetStatData:
             return
 
         xval = int(val)
+        #print self._ifname + ' - ' + str(xval) + ' = ' + str(xval - self._baseval)
+
         if self._baseval == 0:
             self._baseval = xval
             return

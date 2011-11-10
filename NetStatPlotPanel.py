@@ -35,7 +35,7 @@ class NetStatPlotPanel (PlotPanel):
     def SetXLabel(self, xlabel):
         self._xlabel = xlabel
 
-    def Update(self, point_lists):
+    def UpdatePoints(self, point_lists):
         if self._inited:
             self._point_lists_lock.acquire()
             self._point_lists = point_lists

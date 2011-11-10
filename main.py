@@ -2,6 +2,21 @@
 
 import sys
 import getopt
+import os
+import subprocess
+
+try:
+    import wx
+except ImportError:
+    me_and_args = sys.argv
+    try:
+        me_and_args.index("-32")
+    except:
+        os.environ['VERSIONER_PYTHON_PREFER_32_BIT']='yes'
+        me_and_args.append("-32")
+        subprocess.call(me_and_args)
+        exit()
+    raise
 
 from NetStatSnmp import NetStatSnmp
 from HandoverFrame import HandoverFrame
@@ -16,7 +31,8 @@ def usage(txt = None):
     print '-A --agent           Set SNMP agent name'
     print '-I --interface-ar1   Set AR1 interface for SNMP get'
     print '-J --interface-ar2   Set AR2 interface for SNMP get'
-    print '-p --ra-port         Set radvd server port (to enable/disable radvd service)'
+    print '-g --ra-host         Set radvd server host (to enable/disable radvd services)'
+    print '-p --ra-port         Set radvd server port (to enable/disable radvd services)'
     print '-w --width           Set width of diagram (in records num)'
     print '-m --maximum         Set maximum of diagram (in octets)'
     print '-V --video           Set video URI'
@@ -26,7 +42,7 @@ def usage(txt = None):
 
 if __name__ == '__main__':
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hH:P:A:I:J:p:w:m:V:", ["help", "host=", "port=", "agent=", "interface-ar1=", "interface-ar2", "ra-port=", "width=", "maximum=", "video="])
+        opts, args = getopt.getopt(sys.argv[1:], "hH:P:A:I:J:g:p:w:m:V:", ["help", "host=", "port=", "agent=", "interface-ar1=", "interface-ar2", "ra-host=", "ra-port=", "width=", "maximum=", "video="])
     except getopt.GetoptError, err:
         usage()
         exit(1)
@@ -36,6 +52,7 @@ if __name__ == '__main__':
     agent = 'public'
     if_ar1 = ''
     if_ar2 = ''
+    ra_host = host
     ra_port = 162
     records = 200
     maximum = 10000
@@ -55,6 +72,8 @@ if __name__ == '__main__':
             if_ar1 = a
         elif o in ("-J", "--interface-ar2"):
             if_ar2 = a
+        elif o in ("-g", "--ra-host"):
+            ra_host = a
         elif o in ("-p", "--ra-port"):
             ra_port = int(a)
         elif o in ("-w", "--width"):
@@ -73,7 +92,7 @@ if __name__ == '__main__':
     frame.Show()
     frame.SetAr1Interface(if_ar1)
     frame.SetAr2Interface(if_ar2)
-    frame.Start(host, port, agent, ra_port)
+    frame.Start(host, port, agent, ra_host, ra_port)
     app.MainLoop()
 
 
