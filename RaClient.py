@@ -3,8 +3,8 @@ import sys
 
 class RaClient:
 
-    AR1 = 'radvd-ar1'
-    AR2 = 'radvd-ar2'
+    AR1 = 'radvd-an1'
+    AR2 = 'radvd-an2'
 
     def __init__(self, host, port):
         self._host = host

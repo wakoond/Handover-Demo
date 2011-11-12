@@ -38,10 +38,12 @@ class HandoverFrame (wx.Frame):
 
         self.nsc = NetStatCore(records)
 
-        btnAr1Enable = wx.Button(self.panel, wx.ID_ANY, 'Enable')
-        btnAr2Enable = wx.Button(self.panel, wx.ID_ANY, 'Enable')
-        btnAr1Auto = wx.Button(self.panel, wx.ID_ANY, 'Automatic')
-        btnAr2Auto = wx.Button(self.panel, wx.ID_ANY, 'Automatic')
+        self.btnAr1Enable = wx.Button(self.panel, wx.ID_ANY, '-')
+        self.btnAr1Enable.Bind(wx.EVT_BUTTON, self.OnAr1Enable)
+        self.btnAr2Enable = wx.Button(self.panel, wx.ID_ANY, '-')
+        self.btnAr2Enable.Bind(wx.EVT_BUTTON, self.OnAr2Enable)
+        self.btnAr1Auto = wx.Button(self.panel, wx.ID_ANY, 'Automatic')
+        self.btnAr2Auto = wx.Button(self.panel, wx.ID_ANY, 'Automatic')
 
         bmpStart = wx.EmptyBitmap(1, 1)
         bmpStart.LoadFile('start.jpg', wx.BITMAP_TYPE_ANY)
@@ -69,13 +71,13 @@ class HandoverFrame (wx.Frame):
         plotSizer.Add(self.plotAr2, 0, wx.ALIGN_CENTER|wx.EXPAND, 5)
         self.plotAr2.setSizer(plotSizer)
 
-        self.ar1Sizer.Add(btnAr1Enable, 0, wx.ALL|wx.ALIGN_CENTER, 5)
-        self.ar1Sizer.Add(btnAr1Auto, 0, wx.ALL|wx.ALIGN_CENTER, 5)
+        self.ar1Sizer.Add(self.btnAr1Enable, 0, wx.ALL|wx.ALIGN_CENTER, 5)
+        self.ar1Sizer.Add(self.btnAr1Auto, 0, wx.ALL|wx.ALIGN_CENTER, 5)
         self.ar1Sizer.Add(self.ar1RaStart, 0, wx.ALL|wx.ALIGN_CENTER, 20)
         self.ar1Sizer.Add(self.ar1RaStop, 0, wx.ALL|wx.ALIGN_CENTER, 20)
         
-        self.ar2Sizer.Add(btnAr2Enable, 0, wx.ALL|wx.ALIGN_CENTER, 5)
-        self.ar2Sizer.Add(btnAr2Auto, 0, wx.ALL|wx.ALIGN_CENTER, 5)
+        self.ar2Sizer.Add(self.btnAr2Enable, 0, wx.ALL|wx.ALIGN_CENTER, 5)
+        self.ar2Sizer.Add(self.btnAr2Auto, 0, wx.ALL|wx.ALIGN_CENTER, 5)
         self.ar2Sizer.Add(self.ar2RaStart, 0, wx.ALL|wx.ALIGN_CENTER, 20)
         self.ar2Sizer.Add(self.ar2RaStop, 0, wx.ALL|wx.ALIGN_CENTER, 20)
 
@@ -92,8 +94,25 @@ class HandoverFrame (wx.Frame):
         self.panel.SetSizer(topSizer)
         topSizer.Fit(self)        
 
+
+        self.SetWhiteBackground()
         self.Bind(wx.EVT_CLOSE, self.onCloseWindow)
 
+    def GetAllWidgets(self):
+        items = [self.panel]
+        for item in self.panel.GetChildren():
+            items.append(item)
+            if hasattr(item, "GetChildren"):
+                for child in item.GetChildren():
+                    items.append(child)
+        return items
+
+    def SetWhiteBackground(self):
+        widgets = self.GetAllWidgets()
+        panel = widgets[0]
+        for widget in widgets:
+            widget.SetBackgroundColour("White")
+            widget.SetForegroundColour("Balck")
 
     def Ar1PlotDataTrigger(self, ifname, dtype, data):
         self.plotAr1.UpdatePoints([data])
@@ -105,19 +124,34 @@ class HandoverFrame (wx.Frame):
         if (ar1):
             self.ar1RaStart.Show()
             self.ar1RaStop.Hide()
+            self.btnAr1Enable.SetLabel('Disable')
         else:
             self.ar1RaStart.Hide()
             self.ar1RaStop.Show()
+            self.btnAr1Enable.SetLabel('Enable')
         if (ar2):
             self.ar2RaStart.Show()
             self.ar2RaStop.Hide()
+            self.btnAr2Enable.SetLabel('Disable')
         else:
             self.ar2RaStart.Hide()
             self.ar2RaStop.Show()
+            self.btnAr2Enable.SetLabel('Enable')
 
         self.ar1Sizer.Layout()
         self.ar2Sizer.Layout()
 
+    def OnAr1Enable(self, evt):
+        if self.btnAr1Enable.GetLabel() == 'Enable':
+            self.rac.SendStart(RaClient.AR1)
+        elif self.btnAr1Enable.GetLabel() == 'Disable':
+            self.rac.SendStop(RaClient.AR1)
+
+    def OnAr2Enable(self, evt):
+        if self.btnAr2Enable.GetLabel() == 'Enable':
+            self.rac.SendStart(RaClient.AR2)
+        elif self.btnAr2Enable.GetLabel() == 'Disable':
+            self.rac.SendStop(RaClient.AR2)
 
     def SetAr1Interface(self, ifname):
         self.nsc.AddData(ifname, NetStatData.IN_OCTETS, self.Ar1PlotDataTrigger)
