@@ -38,6 +38,7 @@ class VideoPanel(wx.Panel):
         if self.mc != None:
             wx.CallAfter(self.DoLoadVideo, uri)
 
+        self.mc.Bind(wx.media.EVT_MEDIA_STATECHANGED, self.OnStateChange)
 
     def DoLoadVideo(self, uri):
         if self.mc == None:
@@ -51,5 +52,17 @@ class VideoPanel(wx.Panel):
             self.GetSizer().Layout()
             print 'Video Loaded from ' + uri
 
+    def OnStateChange(self, evt):
+        st = self.mc.GetState()
 
+        if st == wx.media.MEDIASTATE_STOPPED:
+            print 'New video state: STOPPED'
+            self.mc.Play()
+        elif st == wx.media.MEDIASTATE_PAUSED:
+            print 'New video state: PAUSED'
+            self.mc.Play()
+        elif st == wx.media.MEDIASTATE_PLAYING:
+            print 'New video state: PLAYING'
+        else:
+            print 'New video state: unknown(' + str(st) + ')'
 
