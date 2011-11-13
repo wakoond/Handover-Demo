@@ -18,8 +18,10 @@ class HandoverFrame (wx.Frame):
  
         bmpLogo = wx.EmptyBitmap(1, 1)
         bmpLogo.LoadFile('logo.jpg', wx.BITMAP_TYPE_ANY)
-        titleCompany = wx.StaticText(self.panel, wx.ID_ANY, 'http://www.wakoond.hu')
         titleLogo = wx.StaticBitmap(self.panel, wx.ID_ANY, bmpLogo)
+        titleCompanyFont = wx.Font(8, wx.FONTFAMILY_TELETYPE, wx.NORMAL, wx.NORMAL, False)
+        titleCompany = wx.StaticText(self.panel, wx.ID_ANY, 'http://www.wakoond.hu')
+        titleCompany.SetFont(titleCompanyFont)
         titleFont = wx.Font(14, wx.SWISS, wx.FONTWEIGHT_BOLD, wx.NORMAL, False)
         titleTxt = wx.StaticText(self.panel, wx.ID_ANY, title, style=wx.ALIGN_RIGHT)
         titleTxt.SetFont(titleFont)
