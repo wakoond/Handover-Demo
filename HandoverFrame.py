@@ -6,11 +6,15 @@ import numpy as num
 from NetStatCore import NetStatCore, NetStatData
 from NetStatPlotPanel import NetStatPlotPanel
 from RaClient import RaClient
+from RacAutoThread import RacAutoThread
 from VideoPanel import VideoPanel
 
 class HandoverFrame (wx.Frame):
     def __init__(self, app, title, records, maximum, video_uri):
         self.app = app
+        self.auto_interval = 60
+        self.auto_enabled = False
+
         wx.Frame.__init__(self, None, wx.ID_ANY, title=title)
  
         # Add a panel so it looks correct on all platforms
@@ -52,7 +56,9 @@ class HandoverFrame (wx.Frame):
         self.btnAr2Enable = wx.Button(self.panel, wx.ID_ANY, '-')
         self.btnAr2Enable.Bind(wx.EVT_BUTTON, self.OnAr2Enable)
         self.btnAr1Auto = wx.Button(self.panel, wx.ID_ANY, 'Automatic')
+        self.btnAr1Auto.Bind(wx.EVT_BUTTON, self.OnAuto)
         self.btnAr2Auto = wx.Button(self.panel, wx.ID_ANY, 'Automatic')
+        self.btnAr2Auto.Bind(wx.EVT_BUTTON, self.OnAuto)
 
         bmpStart = wx.EmptyBitmap(1, 1)
         bmpStart.LoadFile('start.jpg', wx.BITMAP_TYPE_ANY)
@@ -132,6 +138,9 @@ class HandoverFrame (wx.Frame):
     def Ar2PlotDataTrigger(self, ifname, dtype, data):
         self.plotAr2.UpdatePoints([data])
 
+    def SetAutoInterval(self, interval):
+        self.auto_interval = interval
+
     def RaStatusTrigger(self, ar1, ar2):
         if (ar1):
             self.ar1RaStart.Show()
@@ -164,6 +173,35 @@ class HandoverFrame (wx.Frame):
             self.rac.SendStart(RaClient.AR2)
         elif self.btnAr2Enable.GetLabel() == 'Disable':
             self.rac.SendStop(RaClient.AR2)
+
+    def OnAuto(self, evt):
+        if self.auto_enabled:
+            self.btnAr1Enable.Enable(True)
+            self.btnAr2Enable.Enable(True)
+            self.btnAr1Auto.SetLabel('Automatic')
+            self.btnAr2Auto.SetLabel('Automatic')
+            if hasattr(self, 'racTh'):
+                self.racTh.Stop()
+            self.auto_enabled = False
+        else:
+            self.btnAr1Enable.Enable(False)
+            self.btnAr2Enable.Enable(False)
+            self.btnAr1Auto.SetLabel('Manual')
+            self.btnAr2Auto.SetLabel('Manual')
+            self.racTh = RacAutoThread(self.rac, self.auto_interval)
+            self.racTh.start()
+            self.auto_enabled = True
+        
+        self.ar1Sizer.Layout()
+        self.ar2Sizer.Layout()
+
+    def TurnOffAuto(self):
+        self.btnAr1Auto.Enable(False)
+        self.btnAr2Auto.Enable(False)
+        self.btnAr1Auto.Hide()
+        self.btnAr2Auto.Hide()
+        self.ar1Sizer.Layout()
+        self.ar2Sizer.Layout()
 
     def SetAr1Interface(self, ifname):
         self.nsc.AddData(ifname, NetStatData.IN_OCTETS, self.Ar1PlotDataTrigger)
