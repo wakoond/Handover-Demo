@@ -186,9 +186,7 @@ class NetStatSnmp (Thread):
 
         while not self._IsStopped():
             if not transportDispatcher.transportsAreWorking():
-                transportDispatcher.sendMessage(
-                    encoder.encode(reqMsg), udp.domainName, (self._host, self._port)
-                    )
+                transportDispatcher.sendMessage(encoder.encode(reqMsg), udp.domainName, (self._host, self._port))
                 transportDispatcher.jobStarted(1)
                 transportDispatcher.runDispatcher()
             sleep(self._interval)
@@ -197,8 +195,13 @@ class NetStatSnmp (Thread):
                 wholeMsg, reqPDU=()):
         reqPDU = self._reqPDU
         while wholeMsg:
-            rspMsg, wholeMsg = decoder.decode(wholeMsg, asn1Spec=pMod.Message())
-            rspPDU = pMod.apiMessage.getPDU(rspMsg)
+            try:
+                rspMsg, wholeMsg = decoder.decode(wholeMsg, asn1Spec=pMod.Message())
+                rspPDU = pMod.apiMessage.getPDU(rspMsg)
+            except:
+                print 'Error while decoding SNMP message'
+                transportDispatcher.jobFinished(1)
+                return ''
             # Match response to request
             if pMod.apiPDU.getRequestID(reqPDU)==pMod.apiPDU.getRequestID(rspPDU):
                 # Check for SNMP errors reported

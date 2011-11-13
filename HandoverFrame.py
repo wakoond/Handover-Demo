@@ -23,18 +23,19 @@ class HandoverFrame (wx.Frame):
         for i in range(0, records):
             points.append(int(i / 2))
         points = [points]
-        clrs = [[225,200,160]]
+        clrs1 = [[225,10,10]]
+        clrs2 = [[10,10,255]]
  
-        self.plotAr1 = NetStatPlotPanel(self.panel, (350,250), points, clrs)
+        self.plotAr1 = NetStatPlotPanel(self.panel, (350,250), points, clrs1)
         self.plotAr1.SetRecords(records)
         self.plotAr1.SetMaximum(maximum)
-        self.plotAr1.SetTitle('Access Router 1')
-        self.plotAr1.SetXLabel('Title')
-        self.plotAr2 = NetStatPlotPanel(self.panel, (350,250), points, clrs)
+        self.plotAr1.SetTitle('via Access Router 1')
+        self.plotAr1.SetXLabel('Time')
+        self.plotAr2 = NetStatPlotPanel(self.panel, (350,250), points, clrs2)
         self.plotAr2.SetRecords(records)
         self.plotAr2.SetMaximum(maximum)
-        self.plotAr2.SetTitle('Access Router 2')
-        self.plotAr2.SetXLabel('Title')
+        self.plotAr2.SetTitle('via Access Router 2')
+        self.plotAr2.SetXLabel('Time')
 
         self.nsc = NetStatCore(records)
 

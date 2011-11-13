@@ -39,13 +39,16 @@ class NetStatPlotPanel (PlotPanel):
         if self._inited:
             self._point_lists_lock.acquire()
             self._point_lists = point_lists
+            #print self._title + ':' + str(self._point_lists)
             self._point_lists_lock.release()
             self.Refresh()
 
     def draw( self ):
         """Draw data."""
-        if not hasattr( self, 'subplot' ):
-            self.subplot = self.figure.add_subplot( 111 )
+        if hasattr( self, 'subplot' ):
+            self.figure.clear()
+            self.subplot = None
+        self.subplot = self.figure.add_subplot( 111 )
            
         self._point_lists_lock.acquire()
         _self_point_lists = self._point_lists
@@ -64,3 +67,4 @@ class NetStatPlotPanel (PlotPanel):
         self.subplot.set_title ( self._title, fontsize=10 )
 
         self._inited = True
+
