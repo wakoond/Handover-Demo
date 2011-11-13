@@ -4,6 +4,8 @@ import wx
 import numpy as num
 
 from PlotPanel import PlotPanel
+import matplotlib.ticker as ticker
+
 from threading import Lock
 
 class NetStatPlotPanel (PlotPanel):
@@ -48,6 +50,7 @@ class NetStatPlotPanel (PlotPanel):
         if hasattr( self, 'subplot' ):
             self.figure.clear()
             self.subplot = None
+        self.figure.subplots_adjust(left=0.14, bottom=0.07)
         self.subplot = self.figure.add_subplot( 111 )
            
         self._point_lists_lock.acquire()
@@ -60,9 +63,13 @@ class NetStatPlotPanel (PlotPanel):
             self.subplot.plot( x_pts, plot_pts, color=clr, linewidth=3 )
 
         self.subplot.set_xlim( (0, self._records) )
-        self.subplot.set_xticks( [] )
+        xlocator = ticker.NullLocator()
+        self.subplot.xaxis.set_major_locator(xlocator)
         self.subplot.set_ylim( (0, self._maximum) )
-        self.subplot.set_yticks( (0, self._maximum) )
+        ylocator = ticker.LinearLocator(numticks=2)
+        self.subplot.yaxis.set_major_locator(ylocator)
+        yformatter = ticker.FixedFormatter(('0 MB', str(self._maximum / 1000) + ' MB'))
+        self.subplot.yaxis.set_major_formatter(yformatter)
         self.subplot.set_xlabel( self._xlabel, fontsize=10 )
         self.subplot.set_title ( self._title, fontsize=10 )
 

@@ -1,6 +1,9 @@
 import matplotlib
 matplotlib.interactive( True )
 matplotlib.use( 'WXAgg' )
+matplotlib.rcParams['xtick.labelsize'] = 10
+matplotlib.rcParams['ytick.labelsize'] = 10
+
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from matplotlib.figure import Figure
 
@@ -24,7 +27,6 @@ class PlotPanel (wx.Panel):
         self.SetColor( color )
 
         self._SetSize(size)
-        #self.draw()
 
         self._resizeflag = False
         self._sizer = None
