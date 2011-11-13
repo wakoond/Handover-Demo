@@ -16,9 +16,15 @@ class HandoverFrame (wx.Frame):
         # Add a panel so it looks correct on all platforms
         self.panel = wx.Panel(self, wx.ID_ANY)
  
+        bmpLogo = wx.EmptyBitmap(1, 1)
+        bmpLogo.LoadFile('logo.jpg', wx.BITMAP_TYPE_ANY)
+        titleCompany = wx.StaticText(self.panel, wx.ID_ANY, 'http://www.wakoond.hu')
+        titleLogo = wx.StaticBitmap(self.panel, wx.ID_ANY, bmpLogo)
+        titleFont = wx.Font(14, wx.SWISS, wx.FONTWEIGHT_BOLD, wx.NORMAL, False)
         titleTxt = wx.StaticText(self.panel, wx.ID_ANY, title, style=wx.ALIGN_RIGHT)
+        titleTxt.SetFont(titleFont)
+        titlePadding = wx.StaticText(self.panel, wx.ID_ANY, '')
  
-        #points = num.zeros((1,records), dtype=num.int8)
         points = []
         for i in range(0, records):
             points.append(int(i / 2))
@@ -65,7 +71,10 @@ class HandoverFrame (wx.Frame):
         self.ar2Sizer   = wx.BoxSizer(wx.VERTICAL)
         ctrlSizer       = wx.BoxSizer(wx.HORIZONTAL)
         
-        titleSizer.Add(titleTxt, 1, wx.EXPAND, 5)
+        titleSizer.Add(titleLogo, 0, wx.ALIGN_LEFT, 5)
+        titleSizer.Add(titleCompany, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 5)
+        titleSizer.Add(titlePadding, 1, wx.EXPAND, 5)
+        titleSizer.Add(titleTxt, 0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL, 5)
 
         plotSizer.Add(self.plotAr1, 0, wx.ALIGN_CENTER|wx.EXPAND, 5)
         self.plotAr1.setSizer(plotSizer)
@@ -86,7 +95,7 @@ class HandoverFrame (wx.Frame):
         ctrlSizer.Add(video, 2, wx.ALIGN_CENTER_HORIZONTAL, 5)
         ctrlSizer.Add(self.ar2Sizer, 0, wx.ALIGN_RIGHT, 5)
 
-        topSizer.Add(titleSizer, 0,wx.ALIGN_CENTER_HORIZONTAL)
+        topSizer.Add(titleSizer, 0,wx.GROW|wx.ALIGN_CENTER_HORIZONTAL)
         topSizer.Add(wx.StaticLine(self.panel), 0, wx.EXPAND, 5)
         topSizer.Add(plotSizer, 1, wx.EXPAND, 5)
         topSizer.Add(ctrlSizer, 1, wx.EXPAND, 5)
