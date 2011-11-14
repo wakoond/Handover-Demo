@@ -87,12 +87,14 @@ class NetStatCore:
 
     def Start(self):
         for i in self._interfaces:
+            print 'NetStatSnmp: ' + i
             nss = NetStatSnmp(i)
             nss.SetHost(self._host)
             nss.SetPort(self._port)
             nss.SetAgent(self._agent)
             self._nsss.append(nss)
             nss.GetIfPdu()
+            print 'NetStatSnmp: ' + i + ' GetIfPdu done'
             nss.SetInterval(1)
             for d in self._datas:
                 if d.DtypeTriggerNeeded(i):

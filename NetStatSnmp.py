@@ -6,10 +6,27 @@ from pysnmp.proto import api
 from time import sleep, time
 from threading import Thread
 import threading
+import pyasn1.type.error
 
 import wx
+import sys
 
-pMod = api.protoModules[api.protoVersion2c]
+pMod = api.protoModules[api.protoVersion1]
+#pMod = api.protoModules[api.protoVersion2c]
+
+from pysnmp.proto import rfc1155, rfc1902, api
+from pyasn1.codec.ber import encoder, decoder
+
+# --- hack Counter type
+
+def counterCloneHack(self, *args):
+    if args and args[0] < 0:
+        args = (0xffffffff+args[0]-1,) + args[1:]
+
+    return self.__class__(*args)
+
+rfc1155.Counter.clone = counterCloneHack
+rfc1902.Counter32.clone = counterCloneHack
 
 class NetStatSnmp (Thread):
     def __init__(self, ifname):
@@ -198,8 +215,12 @@ class NetStatSnmp (Thread):
             try:
                 rspMsg, wholeMsg = decoder.decode(wholeMsg, asn1Spec=pMod.Message())
                 rspPDU = pMod.apiMessage.getPDU(rspMsg)
-            except:
-                print 'Error while decoding SNMP message'
+            except pyasn1.type.error.ValueConstraintError, why:
+                print 'Error while decoding SNMP message: ValueConstraintError: ' + str(why)
+                transportDispatcher.jobFinished(1)
+                return ''
+            except :
+                print 'Error while decoding SNMP message: ' + str(sys.exc_info()[0])
                 transportDispatcher.jobFinished(1)
                 return ''
             # Match response to request

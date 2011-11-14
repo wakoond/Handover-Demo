@@ -28,6 +28,7 @@ class RaClient:
             self._connected= False
             return
         self._connected= True
+        print 'Connected to RA server: ' + self._host + ':' + str(self._port)
 
     def _ParseStatus(self, data):
         tokens = data.split('|')
@@ -52,6 +53,7 @@ class RaClient:
     def SendStart(self, ar):
         if not self._connected:
             return
+        print 'Sending START: ' + ar
         self._sock.send("START|" + str(ar) + "\n")
         data = self._sock.recv(512)
         self._ParseStatus(data)
@@ -59,6 +61,7 @@ class RaClient:
     def SendStop(self, ar):
         if not self._connected:
             return
+        print 'Sending STOP: ' + ar
         self._sock.send("STOP|" + str(ar) + "\n")
         data = self._sock.recv(512)
         self._ParseStatus(data)
@@ -66,6 +69,7 @@ class RaClient:
     def SendGet(self):
         if not self._connected:
             return
+        print 'Sending GET'
         self._sock.send("GET\n")
         data = self._sock.recv(512)
         self._ParseStatus(data)

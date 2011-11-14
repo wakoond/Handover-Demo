@@ -210,6 +210,7 @@ class HandoverFrame (wx.Frame):
         self.nsc.AddData(ifname, NetStatData.IN_OCTETS, self.Ar2PlotDataTrigger)
 
     def Start(self, host, port, agent, ra_host, ra_port):
+        print 'Starting...'
         self.rac = RaClient(ra_host, ra_port)
         self.rac.SetStatusCb(self.RaStatusTrigger)
         self.rac.Connect()
