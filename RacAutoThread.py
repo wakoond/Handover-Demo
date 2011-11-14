@@ -36,23 +36,25 @@ class RacAutoThread (Thread):
         self._rac.SendStart(RaClient.AR2)
         self._rac.SendStart(RaClient.AR1)
         self._state = RacAutoThread.RAT_ST_BOTH_AR1
+        sleep(self._both_interval)
 
         sleep_itval = 0
         while not self._IsStopped():
             if self._state == RacAutoThread.RAT_ST_BOTH_AR1:
                 self._rac.SendStop(RaClient.AR1)
                 sleep_itval = self._interval
-                self._state == RacAutoThread.RAT_ST_AR2
+                self._state = RacAutoThread.RAT_ST_AR2
             elif self._state == RacAutoThread.RAT_ST_AR2:
                 self._rac.SendStart(RaClient.AR1)
                 sleep_itval = self._both_interval
-                self._state == RacAutoThread.RAT_ST_BOTH_AR2
+                self._state = RacAutoThread.RAT_ST_BOTH_AR2
             elif self._state == RacAutoThread.RAT_ST_BOTH_AR2:
                 self._rac.SendStop(RaClient.AR2)
                 sleep_itval = self._interval
-                self._state == RacAutoThread.RAT_ST_AR1
+                self._state = RacAutoThread.RAT_ST_AR1
             elif self._state == RacAutoThread.RAT_ST_AR1:
                 self._rac.SendStart(RaClient.AR2)
                 sleep_itval = self._both_interval
-                self._state == RacAutoThread.RAT_ST_BOTH_AR1
+                self._state = RacAutoThread.RAT_ST_BOTH_AR1
+            #print 'Sleeping ' + str(sleep_itval) + ' and new state is: ' + str(self._state)
             sleep(sleep_itval)
