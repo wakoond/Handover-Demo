@@ -8,8 +8,9 @@ import threading
 from time import sleep
 
 class VideoPanelCheckThread(Thread):
-    def __init__(self, mc):
+    def __init__(self, vpanel, mc):
         self.mc = mc
+        self.vpanel = vpanel
         Thread.__init__(self)
         self._stop = threading.Event()
 
@@ -27,7 +28,7 @@ class VideoPanelCheckThread(Thread):
             st = self.mc.GetState()
             if prev_st != wx.media.MEDIASTATE_PLAYING and st != wx.media.MEDIASTATE_PLAYING:
                 print 'Execute Play command again'
-                self.mc.Play()
+                self.vpanel.DoLoadVideo()
             prev_st = st
             sleep(5)
 
@@ -67,18 +68,26 @@ class VideoPanel(wx.Panel):
             wx.CallAfter(self.DoLoadVideo, uri)
             self.mc.Bind(wx.media.EVT_MEDIA_STATECHANGED, self.OnStateChange)
 
-    def DoLoadVideo(self, uri):
+    def DoLoadVideo(self, uri=None):
         if self.mc == None:
             return
+
+        if uri == None and not hasattr(self, 'uri'):
+            return
+        if uri == None:
+            uri = self.uri
+        else:
+            self.uri = uri
 
         if not self.mc.LoadURI(uri):
             raise Exception("Unable to load %s: Unsupported format?" % uri)
         else:
             self.mc.SetInitialSize()
             self.mc.Play()
-            self.chkth = VideoPanelCheckThread(self.mc)
-            self.chkth.start()
             self.GetSizer().Layout()
+            if not hasattr(self, 'chkth'):
+                self.chkth = VideoPanelCheckThread(self, self.mc)
+                self.chkth.start()
             print 'Video Loaded from ' + uri
 
     def OnStateChange(self, evt):
@@ -86,10 +95,10 @@ class VideoPanel(wx.Panel):
 
         if st == wx.media.MEDIASTATE_STOPPED:
             print 'New video state: STOPPED'
-            self.mc.Play()
+            self.DoLoadVideo()
         elif st == wx.media.MEDIASTATE_PAUSED:
             print 'New video state: PAUSED'
-            self.mc.Play()
+            self.DoLoadVideo()
         elif st == wx.media.MEDIASTATE_PLAYING:
             print 'New video state: PLAYING'
         else:
