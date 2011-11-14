@@ -3,6 +3,34 @@ import sys
 import wx
 import wx.media
 
+from threading import Thread
+import threading
+from time import sleep
+
+class VideoPanelCheckThread(Thread):
+    def __init__(self, mc):
+        self.mc = mc
+        Thread.__init__(self)
+        self._stop = threading.Event()
+
+    def Stop(self):
+        self._stop.set()
+        self.join()
+
+    def _IsStopped(self):
+        return self._stop.isSet()
+
+    def run(self):
+        prev_st = wx.media.MEDIASTATE_PLAYING
+        st = wx.media.MEDIASTATE_PLAYING
+        while not self._IsStopped():
+            st = self.mc.GetState()
+            if prev_st != wx.media.MEDIASTATE_PLAYING and st != wx.media.MEDIASTATE_PLAYING:
+                print 'Execute Play command again'
+                self.mc.Play()
+            prev_st = st
+            sleep(5)
+
 class VideoPanel(wx.Panel):
     def __init__(self, parent, title, uri, **kwargs):
         if 'id' not in kwargs.keys():
@@ -49,6 +77,8 @@ class VideoPanel(wx.Panel):
         else:
             self.mc.SetInitialSize()
             self.mc.Play()
+            self.chkth = VideoPanelCheckThread(self.mc)
+            self.chkth.start()
             self.GetSizer().Layout()
             print 'Video Loaded from ' + uri
 
@@ -65,4 +95,8 @@ class VideoPanel(wx.Panel):
             print 'New video state: PLAYING'
         else:
             print 'New video state: unknown(' + str(st) + ')'
+
+    def Close(self):
+        if hasattr(self, 'chkth'):
+            self.chkth.Stop()
 

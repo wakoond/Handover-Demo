@@ -70,7 +70,7 @@ class HandoverFrame (wx.Frame):
         self.ar1RaStop = wx.StaticBitmap(self.panel, wx.ID_ANY, bmpStop)
         self.ar2RaStop = wx.StaticBitmap(self.panel, wx.ID_ANY, bmpStop)
 
-        video = VideoPanel(self.panel, "Video Stream", video_uri)
+        self.video = VideoPanel(self.panel, "Video Stream", video_uri)
 
         topSizer        = wx.BoxSizer(wx.VERTICAL)
         titleSizer      = wx.BoxSizer(wx.HORIZONTAL)
@@ -100,7 +100,7 @@ class HandoverFrame (wx.Frame):
         self.ar2Sizer.Add(self.ar2RaStop, 0, wx.ALL|wx.ALIGN_CENTER, 20)
 
         ctrlSizer.Add(self.ar1Sizer, 0, wx.ALIGN_LEFT, 5)
-        ctrlSizer.Add(video, 2, wx.ALIGN_CENTER_HORIZONTAL, 5)
+        ctrlSizer.Add(self.video, 2, wx.ALIGN_CENTER_HORIZONTAL, 5)
         ctrlSizer.Add(self.ar2Sizer, 0, wx.ALIGN_RIGHT, 5)
 
         topSizer.Add(titleSizer, 0,wx.GROW|wx.ALIGN_CENTER_HORIZONTAL)
@@ -222,7 +222,10 @@ class HandoverFrame (wx.Frame):
 
     def onCloseWindow(self, evt):
         print 'Quiting...'
+        if hasattr(self, 'racTh'):
+            self.racTh.Stop()
         self.nsc.Stop()
+        self.video.Close()
         self.Destroy()
         sys.exit(0)
 
