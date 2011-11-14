@@ -198,6 +198,13 @@ void start_radvd(char ** args, pid_t * ra_pid)
     pid_t pid;
     int ret;
     
+    pthread_mutex_lock(&pid_lock);
+    pid = *ra_pid;
+    pthread_mutex_unlock(&pid_lock);
+
+    if (pid != 0)
+        return;
+    
     pid = fork();
 
     if (pid < 0) {

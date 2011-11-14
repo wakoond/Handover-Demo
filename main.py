@@ -36,13 +36,16 @@ def usage(txt = None):
     print '-w --width           Set width of diagram (in records num)'
     print '-m --maximum         Set maximum of diagram (in octets)'
     print '-V --video           Set video URI'
+    print '-i --interval        Set automatic interval'
+    print
+    print '--disable-auto       Disable auto switchng'
     if txt != None:
         print
         print txt
 
 if __name__ == '__main__':
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hH:P:A:I:J:g:p:w:m:V:", ["help", "host=", "port=", "agent=", "interface-ar1=", "interface-ar2", "ra-host=", "ra-port=", "width=", "maximum=", "video="])
+        opts, args = getopt.getopt(sys.argv[1:], "hH:P:A:I:J:g:p:w:m:V:i:", ["help", "host=", "port=", "agent=", "interface-ar1=", "interface-ar2", "ra-host=", "ra-port=", "width=", "maximum=", "video=", "interval=", "disable-auto"])
     except getopt.GetoptError, err:
         usage()
         exit(1)
@@ -57,6 +60,8 @@ if __name__ == '__main__':
     records = 200
     maximum = 10000
     video = None
+    interval = 60
+    dis_a = False
     
     for o, a in opts:
         if o in ("-h", "--help"):
@@ -82,6 +87,10 @@ if __name__ == '__main__':
             maximum = int(a)
         elif o in ("-V", "--video"):
             video = a
+        elif o in ("-i", "--interval"):
+            interval = int(a)
+        elif o in ("--disable-auto"):
+            dis_a = True
 
     if if_ar1 == '' or if_ar2 == '':
         usage('Need to specify interfaces for AR1 and AR2')
@@ -92,6 +101,9 @@ if __name__ == '__main__':
     frame.Show()
     frame.SetAr1Interface(if_ar1)
     frame.SetAr2Interface(if_ar2)
+    frame.SetAutoInterval(interval)
+    if dis_a:
+        frame.TurnOffAuto()
     frame.Start(host, port, agent, ra_host, ra_port)
     app.MainLoop()
 
