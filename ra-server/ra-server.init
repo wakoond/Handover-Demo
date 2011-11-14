@@ -2,12 +2,14 @@
 
 start() { 
 	killall radvd
+	rm -f /var/run/radvd-*.pid
 
 	/usr/sbin/ra-server -P 162 --radvd-path /usr/sbin/radvd \
 		    --radvd-an1-pidfile /var/run/radvd-an1.pid \
 		    --radvd-an2-pidfile /var/run/radvd-an2.pid \
+		    --radvd-an1-start --radvd-an2-start \
 		    --an1 -C /etc/radvd-an1.conf -m stderr_syslog -p /var/run/radvd-an1.pid -s \
-		    --an2 -C /etc/radvd-an2.conf -m stderr_syslog -p /var/run/radvd-an2.pid -s 2>&1 > /var/log/ra-server.log
+		    --an2 -C /etc/radvd-an2.conf -m stderr_syslog -p /var/run/radvd-an2.pid -s 2>&1 > /var/log/ra-server.log &
 }
 
 stop() {

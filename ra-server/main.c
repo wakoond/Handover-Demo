@@ -25,6 +25,8 @@ static int port_num = 0;
 static char * radvd_path = NULL;
 static char * radvd_an1_pidfile = NULL;
 static char * radvd_an2_pidfile = NULL;
+static int start_started_an1 = 0;
+static int start_started_an2 = 0;
 static char ** an1_args = NULL;
 static int an1_args_num = 0;
 static pid_t an1_pid = 0;
@@ -45,6 +47,7 @@ inline void error(int retval, char * fmt, ...)
     vfprintf(stderr, err_fmt, vl);
     va_end(vl);
     fprintf(stderr, "[ERROR] [retval: %d] [error: %d %s]\n", retval, errno, strerror(errno));
+    fflush(stderr);
 }
 
 inline void debug(char * fmt, ...)
@@ -56,7 +59,8 @@ inline void debug(char * fmt, ...)
 
     va_start(vl, fmt);
     vfprintf(stdout, dbg_fmt, vl);
-    va_end(vl);
+    va_end(vl);  
+    fflush(stdout);
 }
 
 void get_opts(int argc, char * argv[])
@@ -105,6 +109,10 @@ void get_opts(int argc, char * argv[])
                 if (radvd_an2_pidfile != NULL)
                     free(radvd_an2_pidfile);
                 radvd_an2_pidfile = strdup(argv[i]);
+            } else if (strcmp(argv[i], "--radvd-an1-start") == 0) {
+	    	start_started_an1=1;
+            } else if (strcmp(argv[i], "--radvd-an2-start") == 0) {
+	    	start_started_an2=1;
             } else if (strcmp(argv[i], "--an1") == 0) {
                 state = OPTS_STATE_AN1;
             } else if (strcmp(argv[i], "--an2") == 0) {
@@ -469,6 +477,11 @@ int main (int argc, char * argv[])
         error(ret, "Unable to create thread");
         exit(1);
     }
+
+    if (start_started_an1)
+        start_radvd(an1_args, &an1_pid);
+    if (start_started_an2)
+        start_radvd(an2_args, &an2_pid);
 
     debug("Waiting for incoming connections on port %d...", port_num);
     for (;;) {

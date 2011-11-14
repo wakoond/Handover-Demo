@@ -65,8 +65,7 @@ class VideoPanel(wx.Panel):
 
         if self.mc != None:
             wx.CallAfter(self.DoLoadVideo, uri)
-
-        self.mc.Bind(wx.media.EVT_MEDIA_STATECHANGED, self.OnStateChange)
+            self.mc.Bind(wx.media.EVT_MEDIA_STATECHANGED, self.OnStateChange)
 
     def DoLoadVideo(self, uri):
         if self.mc == None:
